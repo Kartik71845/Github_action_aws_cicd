@@ -1,0 +1,39 @@
+name: AWS_integration_practice
+
+env:
+  ACCOUNT_ID: 647800544853
+  AWS_REGION: us-east-1
+  ECR_REPO: aws_cicd
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/github_actions_role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: docker build -t ${{ env.ECR_REPO }} .
+
+      - name: Tag Docker image
+        run: docker tag ${{ env.ECR_REPO }}:latest \
+          ${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:latest
+
+      - name: Push Docker image
+        run: docker push \
+          ${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:latest
