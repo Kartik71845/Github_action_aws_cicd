@@ -4,6 +4,10 @@ env:
   ACCOUNT_ID: 647800544853
   AWS_REGION: us-east-1
   ECR_REPO: aws_cicd
+  
+permissions:
+  id-token: write
+  contents: read
 
 on:
   push:
